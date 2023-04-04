@@ -2,15 +2,19 @@ package com.yangyao.dao;
 
 import com.yangyao.pojo.QRCode;
 import com.yangyao.pojo.QRCodeImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
+
 @Repository
+@EnableAutoConfiguration
 public class QRCodeDaoImpl implements QRCodeDao {
+    //@Autowired
+    //DataSource dataSource;
     private static int nextId = 0;
     private static String dbUrl = "jdbc:mysql://localhost:3306";
     private static String username = "root";
@@ -50,32 +54,34 @@ public class QRCodeDaoImpl implements QRCodeDao {
     private PreparedStatement preparedStatement;
 
     private static String DELETE = "DELETE FROM " + tableName + " WHERE id=?";
-    private static String FIND_ALL = "SELECT * FROM " + tableName + " ORDER BY id DESC";
+    private static String FIND_ALL = "SELECT * FROM " + tableName + " ORDER BY ";
     private static String FIND_BY_ID = "SELECT * FROM " + tableName + " WHERE id=?";
     private static String FIND_BY_NAME = "SELECT * FROM " + tableName + " WHERE name=?";
     private static String INSERT = "INSERT INTO " + tableName + " (id, barcodetext, image, birth) VALUES(?, ?, ?, ?)";
     private static String UPDATE = "UPDATE " + tableName + " SET barcodetext=?, image=?, birth=? WHERE id=?";
-    private static String SEARCH = "SELECT * FROM " + tableName + " WHERE barcodetext LIKE ?";
+    private static String SEARCH = "SELECT * FROM " + tableName + " WHERE barcodetext LIKE ? ORDER BY ";
 
-    public Collection<QRCode> getAll() {
+    public List<QRCode> getAll(String sortField, String sortDirection) {
         connection = null;
         preparedStatement = null;
         try {
             connection = DriverManager.getConnection(url, username, password);
-            preparedStatement = connection.prepareStatement(FIND_ALL);
+            preparedStatement = connection.prepareStatement(FIND_ALL + sortField + " " + sortDirection);
+            //preparedStatement.setString(1, sortField);
+            //preparedStatement.setString(2, sortDirection);
             ResultSet resultSet = preparedStatement.executeQuery();
-            Collection<QRCode> set = new HashSet();
+            List<QRCode> codeList = new ArrayList<>();
             while (resultSet.next()) {
                 QRCode qrcode = new QRCodeImpl();
                 qrcode.setId(resultSet.getInt("id"));
                 qrcode.setBarcodeText(resultSet.getString("barcodetext"));
                 qrcode.setImage(resultSet.getString("image"));
                 qrcode.setBirth(resultSet.getTimestamp("birth"));
-                set.add(qrcode);
+                codeList.add(qrcode);
             }
             preparedStatement.close();
             connection.close();
-            return set;
+            return codeList;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -125,6 +131,9 @@ public class QRCodeDaoImpl implements QRCodeDao {
     }
 
     public void updateQRCode(Integer id, String barcodeText) {
+        if (barcodeText.equals(this.getQRCode(id).getBarcodeText())) {
+            return;
+        }
         connection = null;
         preparedStatement = null;
         try {
@@ -157,26 +166,26 @@ public class QRCodeDaoImpl implements QRCodeDao {
         }
     }
 
-    public Collection<QRCode> searchQRCode(String pattern) {
+    public List<QRCode> searchQRCode(String pattern, String sortField, String sortDirection) {
         connection = null;
         preparedStatement = null;
         try {
             connection = DriverManager.getConnection(url, username, password);
-            preparedStatement = connection.prepareStatement(SEARCH);
+            preparedStatement = connection.prepareStatement(SEARCH + sortField + " " + sortDirection);
             preparedStatement.setString(1, "%" + pattern + "%");
             ResultSet resultSet = preparedStatement.executeQuery();
-            Collection<QRCode> set = new HashSet();
+            List<QRCode> codeList = new ArrayList<>();
             while (resultSet.next()) {
                 QRCode qrcode = new QRCodeImpl();
                 qrcode.setId(resultSet.getInt("id"));
                 qrcode.setBarcodeText(resultSet.getString("barcodetext"));
                 qrcode.setImage(resultSet.getString("image"));
                 qrcode.setBirth(resultSet.getTimestamp("birth"));
-                set.add(qrcode);
+                codeList.add(qrcode);
             }
             preparedStatement.close();
             connection.close();
-            return set;
+            return codeList;
         } catch (Exception e) {
             e.printStackTrace();
         }

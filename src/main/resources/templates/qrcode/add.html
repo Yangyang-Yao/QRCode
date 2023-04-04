@@ -55,6 +55,8 @@
                 <div class="form-group">
                     <label>Text of QRCode</label>
                     <input type="text" name="barcodeText" class="form-control" placeholder="">
+                    <input th:value="${sortField}" name="sortField" type="hidden" class="form-control" placeholder="">
+                    <input th:value="${sortDirection}" name="sortDirection" type="hidden" class="form-control" placeholder="">
                 </div>
                 <button type="submit" class="btn btn-primary">Add</button>
                 <button type="reset" class="btn btn-primary">Reset</button>

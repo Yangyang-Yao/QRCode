@@ -57,6 +57,10 @@
                     <label>Text of QRCode</label>
                     <input th:value="${editqrcode.getBarcodeText()}" name="barcodeText" type="text" class="form-control" placeholder="">
                 </div>
+                <input th:value="${from}" name="from" type="hidden" class="form-control" placeholder="">
+                <input th:value="${pattern}" name="pattern" type="hidden" class="form-control" placeholder="">
+                <input th:value="${sortField}" name="sortField" type="hidden" class="form-control" placeholder="">
+                <input th:value="${sortDirection}" name="sortDirection" type="hidden" class="form-control" placeholder="">
                 <button type="submit" class="btn btn-primary">Confirm</button>
                 <button type="reset" class="btn btn-primary">Reset</button>
             </form>

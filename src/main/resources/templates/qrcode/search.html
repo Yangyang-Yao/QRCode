@@ -53,7 +53,9 @@
 					<h2>Search QRCode</h2>
 					<form th:action="@{/searchqrcode}" method="post">
 						<div class="form-group">
-							<input th:value="${search}" name="barcodeText" type="text" class="form-control" placeholder="">
+							<input th:value="${pattern}" name="pattern" type="text" class="form-control" placeholder="">
+							<input th:value="${sortField}" name="sortField" type="hidden" class="form-control" placeholder="">
+							<input th:value="${sortDirection}" name="sortDirection" type="hidden" class="form-control" placeholder="">
 							<button type="submit" class="btn btn-primary">Search</button>
 						</div>
 					</form>
@@ -61,9 +63,13 @@
 						<table class="table table-striped table-sm">
 							<thead>
 								<tr>
-									<th>Text</th>
+									<th>
+										<a th:href="@{'/searchqrcode?' + ${pattern==''?'':'pattern='+pattern+'&'} + 'sort_field=barcodetext&sort_direction=' + ${reverseSortDirection}}">Text</a>
+									</th>
 									<th>QRCode</th>
-									<th>Last edit</th>
+									<th>
+										<a th:href="@{'/searchqrcode?' + ${pattern==''?'':'pattern='+pattern+'&'} + 'sort_field=birth&sort_direction=' + ${reverseSortDirection}}">Last edit</a>
+									</th>
 									<th>Action</th>
 								</tr>
 							</thead>
@@ -73,8 +79,8 @@
 									<td><img th:src="${'data:image/jpeg;charset=utf-8;base64,' + qrcode.getImage()}" alt=""></td>
 									<td th:text="${qrcode.getBirthAsString()}">Text</td>
 									<td>
-										<a class="btn btn-sm btn-primary" th:href="@{/update/{id}(id=${qrcode.getId()})}">Edit</a>
-										<a class="btn btn-sm btn-danger" th:href="@{/delete/{id}(id=${qrcode.getId()})}">Delete</a>
+										<a class="btn btn-sm btn-primary" th:href="@{'/update/' + ${qrcode.getId()} + '?from=searchqrcode&pattern=' + ${pattern} + '&sort_field=' + ${sortField} + '&sort_direction=' + ${sortDirection}}">Edit</a>
+										<a class="btn btn-sm btn-danger" th:href="@{'/delete/' + ${qrcode.getId()} + '?from=searchqrcode&pattern=' + ${pattern} + '&sort_field=' + ${sortField} + '&sort_direction=' + ${sortDirection}}">Delete</a>
 									</td>
 								</tr>
 							</tbody>
