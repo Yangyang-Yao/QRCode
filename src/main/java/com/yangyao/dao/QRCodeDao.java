@@ -9,6 +9,7 @@ import java.util.Map;
 public interface QRCodeDao {
     List<QRCode> getAll(String sortField, String sortDirection);
     QRCode getQRCode(Integer id);
+    void addQRCode(String barcodeText);
     void addQRCode(QRCode qrcode);
     void updateQRCode(Integer id, String barcodeText);
     void deleteQRCode(Integer id);

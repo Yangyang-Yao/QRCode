@@ -112,6 +112,25 @@ public class QRCodeDaoImpl implements QRCodeDao {
         return null;
     }
 
+    public void addQRCode(String barcodeText) {
+        connection = null;
+        preparedStatement = null;
+        try {
+            connection = DriverManager.getConnection(url, username, password);
+            preparedStatement = connection.prepareStatement(INSERT);
+            QRCode qrcode = new QRCodeImpl(barcodeText);
+            preparedStatement.setInt(1, nextId++);
+            preparedStatement.setString(2, barcodeText);
+            preparedStatement.setString(3, qrcode.getImage());
+            preparedStatement.setTimestamp(4, qrcode.getBirth());
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void addQRCode(QRCode qrcode) {
         connection = null;
         preparedStatement = null;
