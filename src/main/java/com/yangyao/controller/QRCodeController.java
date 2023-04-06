@@ -3,6 +3,8 @@ package com.yangyao.controller;
 import com.yangyao.dao.QRCodeDao;
 import com.yangyao.pojo.QRCode;
 import com.yangyao.pojo.QRCodeImpl;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Base64;
 
 @Controller
 public class QRCodeController {
@@ -119,5 +122,21 @@ public class QRCodeController {
             msg = "Upload failed";
         }
         return "redirect:/qrcodes?sort_field=" + sortField + "&sort_direction=" + sortDirection + "&msg=" + msg;
+    }
+
+    @GetMapping("/download/{id}")
+    public void downloadQRCode(@PathVariable("id") Integer id, HttpServletResponse response) {
+        try {
+            QRCode qrcode = qrCodes.getQRCode(id);
+            response.setContentType("application/octet-stream");
+            String headerKey = "Content-Disposition";
+            String headerValue = "attachment; filename = " + qrcode.getBarcodeText() + ".png";
+            response.setHeader(headerKey, headerValue);
+            ServletOutputStream outputStream = response.getOutputStream();
+            outputStream.write(Base64.getDecoder().decode(qrcode.getImage()));
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

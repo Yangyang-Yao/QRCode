@@ -79,6 +79,7 @@
 									<td><img th:src="${'data:image/jpeg;charset=utf-8;base64,' + qrcode.getImage()}" alt=""></td>
 									<td th:text="${qrcode.getBirthAsString()}">Text</td>
 									<td>
+										<a class="btn btn-sm btn-success" th:href="@{'/download/' + ${qrcode.getId()}}">Download</a>
 										<a class="btn btn-sm btn-primary" th:href="@{'/update/' + ${qrcode.getId()} + '?from=searchqrcode&pattern=' + ${pattern} + '&sort_field=' + ${sortField} + '&sort_direction=' + ${sortDirection}}">Edit</a>
 										<a class="btn btn-sm btn-danger" th:href="@{'/delete/' + ${qrcode.getId()} + '?from=searchqrcode&pattern=' + ${pattern} + '&sort_field=' + ${sortField} + '&sort_direction=' + ${sortDirection}}">Delete</a>
 									</td>
