@@ -185,13 +185,17 @@ public class QRCodeDaoImpl implements QRCodeDao {
         }
     }
 
-    public List<QRCode> searchQRCode(String pattern, String sortField, String sortDirection) {
+    public List<QRCode> searchQRCode(String pattern, String sortField, String sortDirection, String fullMatch) {
         connection = null;
         preparedStatement = null;
         try {
             connection = DriverManager.getConnection(url, username, password);
             preparedStatement = connection.prepareStatement(SEARCH + sortField + " " + sortDirection);
-            preparedStatement.setString(1, "%" + pattern + "%");
+            if (fullMatch != null && fullMatch.equals("on")) {
+                preparedStatement.setString(1, pattern);
+            } else {
+                preparedStatement.setString(1, "%" + pattern + "%");
+            }
             ResultSet resultSet = preparedStatement.executeQuery();
             List<QRCode> codeList = new ArrayList<>();
             while (resultSet.next()) {

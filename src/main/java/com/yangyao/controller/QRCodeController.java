@@ -82,7 +82,7 @@ public class QRCodeController {
     }
 
     @GetMapping("/searchqrcode")
-    public String toSearchPage(@RequestParam(name = "pattern", defaultValue = "") String pattern, @RequestParam(name = "sort_field") String sortField, @RequestParam(name = "sort_direction") String sortDirection, Model model) {
+    public String toSearchPage(@RequestParam(name = "pattern", defaultValue = "") String pattern, @RequestParam(name = "sort_field") String sortField, @RequestParam(name = "sort_direction") String sortDirection, @RequestParam(name = "full_match", defaultValue = "off") String fullMatch, Model model) {
         model.addAttribute("pattern", pattern);
         model.addAttribute("sortField", sortField);
         model.addAttribute("sortDirection", sortDirection);
@@ -90,17 +90,18 @@ public class QRCodeController {
         if (pattern.equals("")) {
             model.addAttribute("qrcodelist", qrCodes.getAll(sortField, sortDirection));
         } else {
-            model.addAttribute("qrcodelist", qrCodes.searchQRCode(pattern, sortField, sortDirection));
+            model.addAttribute("qrcodelist", qrCodes.searchQRCode(pattern, sortField, sortDirection, fullMatch));
         }
+        model.addAttribute("fullMatch", fullMatch);
         return "qrcode/search";
     }
 
     @PostMapping("/searchqrcode")
-    public String searchQRCode(String pattern, String sortField, String sortDirection) {
+    public String searchQRCode(String pattern, String sortField, String sortDirection, String fullMatch) {
         if (pattern.equals("")) {
             return "redirect:/searchqrcode?sort_field=" + sortField + "&sort_direction=" + sortDirection;
         }
-        return "redirect:/searchqrcode?pattern=" + pattern + "&sort_field=" + sortField + "&sort_direction=" + sortDirection;
+        return "redirect:/searchqrcode?pattern=" + pattern + "&sort_field=" + sortField + "&sort_direction=" + sortDirection + "&full_match=" + (fullMatch != null ? "on" : "off");
     }
 
     @PostMapping("/importfile")

@@ -13,5 +13,5 @@ public interface QRCodeDao {
     void addQRCode(QRCode qrcode);
     void updateQRCode(Integer id, String barcodeText);
     void deleteQRCode(Integer id);
-    List<QRCode> searchQRCode(String pattern, String sortField, String sortDirection);
+    List<QRCode> searchQRCode(String pattern, String sortField, String sortDirection, String fullMatch);
 }
