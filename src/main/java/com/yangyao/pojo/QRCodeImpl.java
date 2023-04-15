@@ -8,7 +8,6 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
@@ -34,8 +33,7 @@ public class QRCodeImpl implements QRCode {
             BitMatrix bitMatrix = barcodeWriter.encode(barcodeText, BarcodeFormat.QR_CODE, 200, 200);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             ImageIO.write(MatrixToImageWriter.toBufferedImage(bitMatrix), "png", output);
-            String imageAsBase64 = Base64.getEncoder().encodeToString(output.toByteArray());
-            return imageAsBase64;
+            return Base64.getEncoder().encodeToString(output.toByteArray());
         } catch (Exception e) {
             return null;
         }

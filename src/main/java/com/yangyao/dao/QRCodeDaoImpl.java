@@ -2,11 +2,9 @@ package com.yangyao.dao;
 
 import com.yangyao.pojo.QRCode;
 import com.yangyao.pojo.QRCodeImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 
@@ -16,12 +14,12 @@ public class QRCodeDaoImpl implements QRCodeDao {
     //@Autowired
     //DataSource dataSource;
     private static int nextId = 0;
-    private static String dbUrl = "jdbc:mysql://localhost:3306";
-    private static String username = "root";
-    private static String password = "yao123456";
-    private static String dbName = "qrcodegenerator";
-    private static String tableName = "qrcode";
-    private static String url = "jdbc:mysql://localhost:3306/" + dbName + "?useUnicode=true&characterEncoding=utf8";
+    private final static String dbUrl = "jdbc:mysql://localhost:3306";
+    private final static String username = "root";
+    private final static String password = "yao123456";
+    private final static String dbName = "qrcodegenerator";
+    private final static String tableName = "qrcode";
+    private final static String url = "jdbc:mysql://localhost:3306/" + dbName + "?useUnicode=true&characterEncoding=utf8";
     static {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -34,6 +32,7 @@ public class QRCodeDaoImpl implements QRCodeDao {
             query = "CREATE TABLE IF NOT EXISTS " +
                     tableName +
                     "(id INT PRIMARY KEY, " +
+                    "userid INT, " +
                     "barcodetext VARCHAR(100), " +
                     "image VARCHAR(1000), " +
                     "birth TIMESTAMP)";
@@ -53,15 +52,14 @@ public class QRCodeDaoImpl implements QRCodeDao {
 
     private PreparedStatement preparedStatement;
 
-    private static String DELETE = "DELETE FROM " + tableName + " WHERE id=?";
-    private static String FIND_ALL = "SELECT * FROM " + tableName + " ORDER BY ";
-    private static String FIND_BY_ID = "SELECT * FROM " + tableName + " WHERE id=?";
-    private static String FIND_BY_NAME = "SELECT * FROM " + tableName + " WHERE name=?";
-    private static String INSERT = "INSERT INTO " + tableName + " (id, barcodetext, image, birth) VALUES(?, ?, ?, ?)";
-    private static String UPDATE = "UPDATE " + tableName + " SET barcodetext=?, image=?, birth=? WHERE id=?";
-    private static String SEARCH = "SELECT * FROM " + tableName + " WHERE barcodetext LIKE ? ORDER BY ";
+    private final static String DELETE = "DELETE FROM " + tableName + " WHERE id=?";
+    private final static String FIND_ALL = "SELECT * FROM " + tableName + " WHERE userid=? ORDER BY ";
+    private final static String FIND_BY_ID = "SELECT * FROM " + tableName + " WHERE id=?";
+    private final static String INSERT = "INSERT INTO " + tableName + " (id, userid, barcodetext, image, birth) VALUES(?, ?, ?, ?, ?)";
+    private final static String UPDATE = "UPDATE " + tableName + " SET barcodetext=?, image=?, birth=? WHERE id=?";
+    private final static String SEARCH = "SELECT * FROM " + tableName + " WHERE userid=? AND barcodetext LIKE ? ORDER BY ";
 
-    public List<QRCode> getAll(String sortField, String sortDirection) {
+    public List<QRCode> getAll(int userId, String sortField, String sortDirection) {
         connection = null;
         preparedStatement = null;
         try {
@@ -69,6 +67,7 @@ public class QRCodeDaoImpl implements QRCodeDao {
             preparedStatement = connection.prepareStatement(FIND_ALL + sortField + " " + sortDirection);
             //preparedStatement.setString(1, sortField);
             //preparedStatement.setString(2, sortDirection);
+            preparedStatement.setInt(1, userId);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<QRCode> codeList = new ArrayList<>();
             while (resultSet.next()) {
@@ -112,7 +111,7 @@ public class QRCodeDaoImpl implements QRCodeDao {
         return null;
     }
 
-    public void addQRCode(String barcodeText) {
+    public void addQRCode(int userId, String barcodeText) {
         connection = null;
         preparedStatement = null;
         try {
@@ -120,9 +119,10 @@ public class QRCodeDaoImpl implements QRCodeDao {
             preparedStatement = connection.prepareStatement(INSERT);
             QRCode qrcode = new QRCodeImpl(barcodeText);
             preparedStatement.setInt(1, nextId++);
-            preparedStatement.setString(2, barcodeText);
-            preparedStatement.setString(3, qrcode.getImage());
-            preparedStatement.setTimestamp(4, qrcode.getBirth());
+            preparedStatement.setInt(2, userId);
+            preparedStatement.setString(3, barcodeText);
+            preparedStatement.setString(4, qrcode.getImage());
+            preparedStatement.setTimestamp(5, qrcode.getBirth());
             preparedStatement.executeUpdate();
             preparedStatement.close();
             connection.close();
@@ -131,16 +131,17 @@ public class QRCodeDaoImpl implements QRCodeDao {
         }
     }
 
-    public void addQRCode(QRCode qrcode) {
+    public void addQRCode(int userId, QRCode qrcode) {
         connection = null;
         preparedStatement = null;
         try {
             connection = DriverManager.getConnection(url, username, password);
             preparedStatement = connection.prepareStatement(INSERT);
             preparedStatement.setInt(1, nextId++);
-            preparedStatement.setString(2, qrcode.getBarcodeText());
-            preparedStatement.setString(3, qrcode.getImage());
-            preparedStatement.setTimestamp(4, qrcode.getBirth());
+            preparedStatement.setInt(2, userId);
+            preparedStatement.setString(3, qrcode.getBarcodeText());
+            preparedStatement.setString(4, qrcode.getImage());
+            preparedStatement.setTimestamp(5, qrcode.getBirth());
             preparedStatement.executeUpdate();
             preparedStatement.close();
             connection.close();
@@ -185,16 +186,17 @@ public class QRCodeDaoImpl implements QRCodeDao {
         }
     }
 
-    public List<QRCode> searchQRCode(String pattern, String sortField, String sortDirection, String fullMatch) {
+    public List<QRCode> searchQRCode(int userId, String pattern, String sortField, String sortDirection, String fullMatch) {
         connection = null;
         preparedStatement = null;
         try {
             connection = DriverManager.getConnection(url, username, password);
             preparedStatement = connection.prepareStatement(SEARCH + sortField + " " + sortDirection);
+            preparedStatement.setInt(1, userId);
             if (fullMatch != null && fullMatch.equals("on")) {
-                preparedStatement.setString(1, pattern);
+                preparedStatement.setString(2, pattern);
             } else {
-                preparedStatement.setString(1, "%" + pattern + "%");
+                preparedStatement.setString(2, "%" + pattern + "%");
             }
             ResultSet resultSet = preparedStatement.executeQuery();
             List<QRCode> codeList = new ArrayList<>();

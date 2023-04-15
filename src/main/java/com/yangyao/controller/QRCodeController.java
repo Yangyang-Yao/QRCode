@@ -20,13 +20,14 @@ import java.util.Base64;
 public class QRCodeController {
     @Autowired
     QRCodeDao qrCodes;
+
     @GetMapping("/qrcodes_sidebar")
-    public String sideBarToList(Model model) {
+    public String sideBarToList() {
         return "redirect:/qrcodes?sort_field=birth&sort_direction=desc";
     }
     @GetMapping("/qrcodes")
-    public String toSortedList(@RequestParam(name = "sort_field") String sortField, @RequestParam(name = "sort_direction") String sortDirection, @RequestParam(name = "msg", required = false) String msg, Model model) {
-        model.addAttribute("qrcodelist", qrCodes.getAll(sortField, sortDirection));
+    public String toSortedList(HttpSession session, @RequestParam(name = "sort_field") String sortField, @RequestParam(name = "sort_direction") String sortDirection, @RequestParam(name = "msg", required = false) String msg, Model model) {
+        model.addAttribute("qrcodelist", qrCodes.getAll((int) session.getAttribute("loginUserId"), sortField, sortDirection));
         model.addAttribute("sortField", sortField);
         model.addAttribute("sortDirection", sortDirection);
         model.addAttribute("reverseSortDirection", sortDirection.equals("asc") ? "desc" : "asc");
@@ -42,8 +43,8 @@ public class QRCodeController {
     }
 
     @PostMapping("/addqrcode")
-    public String addQRCode(QRCodeImpl qrcode, String sortField, String sortDirection) {
-        qrCodes.addQRCode(qrcode);
+    public String addQRCode(HttpSession session, QRCodeImpl qrcode, String sortField, String sortDirection) {
+        qrCodes.addQRCode((int) session.getAttribute("loginUserId"), qrcode);
         return "redirect:/qrcodes?sort_field=" + sortField + "&sort_direction=" + sortDirection;
     }
 
@@ -82,15 +83,15 @@ public class QRCodeController {
     }
 
     @GetMapping("/searchqrcode")
-    public String toSearchPage(@RequestParam(name = "pattern", defaultValue = "") String pattern, @RequestParam(name = "sort_field") String sortField, @RequestParam(name = "sort_direction") String sortDirection, @RequestParam(name = "full_match", defaultValue = "off") String fullMatch, Model model) {
+    public String toSearchPage(HttpSession session, @RequestParam(name = "pattern", defaultValue = "") String pattern, @RequestParam(name = "sort_field") String sortField, @RequestParam(name = "sort_direction") String sortDirection, @RequestParam(name = "full_match", defaultValue = "off") String fullMatch, Model model) {
         model.addAttribute("pattern", pattern);
         model.addAttribute("sortField", sortField);
         model.addAttribute("sortDirection", sortDirection);
         model.addAttribute("reverseSortDirection", sortDirection.equals("asc") ? "desc" : "asc");
         if (pattern.equals("")) {
-            model.addAttribute("qrcodelist", qrCodes.getAll(sortField, sortDirection));
+            model.addAttribute("qrcodelist", qrCodes.getAll((int) session.getAttribute("loginUserId"), sortField, sortDirection));
         } else {
-            model.addAttribute("qrcodelist", qrCodes.searchQRCode(pattern, sortField, sortDirection, fullMatch));
+            model.addAttribute("qrcodelist", qrCodes.searchQRCode((int) session.getAttribute("loginUserId"), pattern, sortField, sortDirection, fullMatch));
         }
         model.addAttribute("fullMatch", fullMatch);
         return "qrcode/search";
@@ -105,8 +106,8 @@ public class QRCodeController {
     }
 
     @PostMapping("/importfile")
-    public String addQRCodeFromFile(@RequestParam(name = "file") MultipartFile file, String sortField, String sortDirection, Model model) {
-        String msg = "";
+    public String addQRCodeFromFile(HttpSession session, @RequestParam(name = "file") MultipartFile file, String sortField, String sortDirection) {
+        String msg;
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
             if (!reader.ready()) {
@@ -114,7 +115,7 @@ public class QRCodeController {
             } else {
                 while(reader.ready()) {
                     String line = reader.readLine();
-                    qrCodes.addQRCode(line);
+                    qrCodes.addQRCode((int) session.getAttribute("loginUserId"), line);
                 }
                 msg = "Upload success";
             }
