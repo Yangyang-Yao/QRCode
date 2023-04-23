@@ -20,7 +20,8 @@ public class LoginController {
         if (id >= 0) {
             session.setAttribute("loginUser", username);
             session.setAttribute("loginUserId", id);
-            return "redirect:/main.html";
+            // return "redirect:/main.html";
+            return "redirect:/qrcodes_sidebar";
         } else {
             model.addAttribute("msg", "Wrong username or password");
             return "index";

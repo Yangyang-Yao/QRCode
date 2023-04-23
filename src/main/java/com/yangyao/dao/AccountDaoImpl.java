@@ -13,7 +13,7 @@ public class AccountDaoImpl implements AccountDao {
     private static int nextId = 0;
     private final static String dbUrl = "jdbc:mysql://localhost:3306";
     private final static String username = "root";
-    private final static String password = "yao123456";
+    private final static String password = "examplepassword";
     private final static String dbName = "qrcodegenerator";
     private final static String tableName = "account";
     private final static String url = "jdbc:mysql://localhost:3306/" + dbName + "?useUnicode=true&characterEncoding=utf8";
